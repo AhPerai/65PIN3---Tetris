@@ -1,4 +1,4 @@
-import pygame, random
+import pygame, random, numpy as np
 
 pygame.font.init()
 
@@ -24,9 +24,8 @@ S = [['.....',
       '..0..',
       '..00.',
       '...0.',
-      '.....']]
-
-Z = [['.....',
+      '.....'],
+     ['.....',
       '.....',
       '.00..',
       '..00.',
@@ -117,7 +116,7 @@ T = [['.....',
       '..0..',
       '.....']]
 
-shapes = [S, Z, I, O, J, L, T] #0-6 indexes 
+shapes = [S, I, O, J, L, T] #0-6 indexes 
 shape_colors = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
 
 class Piece(object):
@@ -173,7 +172,6 @@ def check_lost(positions):
     for pos in positions:
         x, y = pos
         if y < 1:
-            print('lost because y:',y)
             return True
     return False
 
@@ -256,15 +254,78 @@ def draw_window(surface, grid, score =0):
     sx = top_left_x + play_width + 50
     sy = top_left_y + play_height/2 - 100
     surface.blit(label, (sx + 25, sy + 160))
+    
+def mapPossibleMoves(grid, blocked_position, shape):
+    accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0,0,0)] for i in range(20)]
+    accepted_pos = [j for sub in accepted_pos for j in sub]
+    highest_blocks = {0: 20, 1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 20, 8: 20, 9: 20}
+    for pos in blocked_position:
+        i, j = pos
+        if j < highest_blocks.get(i): highest_blocks[i] = j
+    
+    rotations = getRotationPosition(shape)
+    
+    for i in rotations: 
+        getValidMoves(highest_blocks, accepted_pos, rotations.get(i))
+    
+def getRotationPosition(shape): 
+    rotations = {}
+    for rotation in range(len(shape.shape)): 
+        format = shape.shape[rotation % len(shape.shape)]
+        positions = []
+        base_col = 4
+        base_row = 0        
+        for i, line in enumerate(format):
+            row = list(line)
+            for j, column in enumerate(row):
+                if column == '0':
+                    positions.append((j,i)) 
+                    if j <= base_col: 
+                        base_col = j
+                        base_row = i
+    
+        left_point = 0
+        right_point = 0
+        for i, pos in enumerate(positions):
+            col = pos[0] - base_col
+            positions[i] = (col, pos[1] - base_row)
+            if left_point  > col: left_point  = col
+            if right_point < col: right_point = col
+        
+        lenght = 1+(right_point - left_point) 
+            
+        rotations[rotation] = positions, lenght, right_point, left_point  
+         
+    return rotations
 
+def getValidMoves(highest_blocks, accepted_pos, rotation):
+    validMoves = []
+    
+    for i in range(10):
+        highest_block = highest_blocks.get(i)
+        if rotation[3] + i < 0 or rotation[2] + i > 9:
+            continue
+        j = i
+        for j in range(rotation[1] + i):
+            if highest_blocks.get(j) < highest_block:
+                highest_block = highest_blocks.get(j)
+        for pos in rotation[0]:
+            pos = pos[0]+i, pos[1]+highest_block-1
+            if pos not in accepted_pos: continue
+        play = highest_block-1,i
+        validMoves.append(play)
+    
+    return validMoves
+                
+                
 def main(windown):
     
     blocked_position = {}
     grid = create_grid(blocked_position)
     
-    change_piece = False
+    change_piece = True
+    shape_pos = []
     run = True
-    current_piece = get_shape()
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
@@ -272,6 +333,19 @@ def main(windown):
     score = 0
     
     while run:
+        #atualizando posicoes bloqueadas
+        if change_piece:
+            for pos in shape_pos:
+                p = (pos[0], pos[1])
+                blocked_position[p] = current_piece.color
+                
+            #Criação do próximo formato 
+            current_piece = next_piece
+            next_piece = get_shape()
+            change_piece = False
+            score += clear_rows(grid, blocked_position) * 10
+            mapPossibleMoves(grid, blocked_position, current_piece)
+        
         fall_speed = 0.27
         
         grid = create_grid(blocked_position)
@@ -320,19 +394,7 @@ def main(windown):
             x, y = shape_pos[i]
             if y > -1:
                 grid[y][x]=current_piece.color
-        
-        #atualizando posicoes bloqueadas
-        if change_piece:
-            for pos in shape_pos:
-                p = (pos[0], pos[1])
-                blocked_position[p] = current_piece.color
-                
-            current_piece = next_piece
-            next_piece = get_shape()
-            change_piece = False
-            score += clear_rows(grid, blocked_position) * 10
             
-        
         draw_window(windown, grid, score)
         draw_next_shape(next_piece, windown)
         pygame.display.update() 
@@ -361,4 +423,4 @@ def main_menu(windown):
 
 windown = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Tetris')
-main_menu(windown)  # start game
+main_menu(windown)  # inicia o jogo
