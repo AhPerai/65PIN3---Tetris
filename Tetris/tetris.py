@@ -1,9 +1,10 @@
 import pygame, random, numpy as np
+from Tetris.shapes import *
 
 pygame.font.init()
 
 #VARIAVEIS GLOBAIS
-screen_width = 800;
+screen_width = 800
 screen_height = 700
 block_size = 30
 play_height = block_size * 20
@@ -15,109 +16,109 @@ top_left_y = screen_height - play_height
 
 #FORMATO DOS BLOCOS 
 
-S = [['.....',
-      '......',
-      '..00..',
-      '.00...',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..00.',
-      '...0.',
-      '.....'],
-     ['.....',
-      '.....',
-      '.00..',
-      '..00.',
-      '.....'],
-     ['.....',
-      '..0..',
-      '.00..',
-      '.0...',
-      '.....']]
+# S = [['.....',
+#       '......',
+#       '..00..',
+#       '.00...',
+#       '.....'],
+#      ['.....',
+#       '..0..',
+#       '..00.',
+#       '...0.',
+#       '.....'],
+#      ['.....',
+#       '.....',
+#       '.00..',
+#       '..00.',
+#       '.....'],
+#      ['.....',
+#       '..0..',
+#       '.00..',
+#       '.0...',
+#       '.....']]
 
-I = [['..0..',
-      '..0..',
-      '..0..',
-      '..0..',
-      '.....'],
-     ['.....',
-      '0000.',
-      '.....',
-      '.....',
-      '.....']]
+# I = [['..0..',
+#       '..0..',
+#       '..0..',
+#       '..0..',
+#       '.....'],
+#      ['.....',
+#       '0000.',
+#       '.....',
+#       '.....',
+#       '.....']]
 
-O = [['.....',
-      '.....',
-      '.00..',
-      '.00..',
-      '.....']]
+# O = [['.....',
+#       '.....',
+#       '.00..',
+#       '.00..',
+#       '.....']]
 
-J = [['.....',
-      '.0...',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..00.',
-      '..0..',
-      '..0..',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '...0.',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..0..',
-      '.00..',
-      '.....']]
+# J = [['.....',
+#       '.0...',
+#       '.000.',
+#       '.....',
+#       '.....'],
+#      ['.....',
+#       '..00.',
+#       '..0..',
+#       '..0..',
+#       '.....'],
+#      ['.....',
+#       '.....',
+#       '.000.',
+#       '...0.',
+#       '.....'],
+#      ['.....',
+#       '..0..',
+#       '..0..',
+#       '.00..',
+#       '.....']]
 
-L = [['.....',
-      '...0.',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..0..',
-      '..00.',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '.0...',
-      '.....'],
-     ['.....',
-      '.00..',
-      '..0..',
-      '..0..',
-      '.....']]
+# L = [['.....',
+#       '...0.',
+#       '.000.',
+#       '.....',
+#       '.....'],
+#      ['.....',
+#       '..0..',
+#       '..0..',
+#       '..00.',
+#       '.....'],
+#      ['.....',
+#       '.....',
+#       '.000.',
+#       '.0...',
+#       '.....'],
+#      ['.....',
+#       '.00..',
+#       '..0..',
+#       '..0..',
+#       '.....']]
 
-T = [['.....',
-      '..0..',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..00.',
-      '..0..',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '..0..',
-      '.....'],
-     ['.....',
-      '..0..',
-      '.00..',
-      '..0..',
-      '.....']]
+# T = [['.....',
+#       '..0..',
+#       '.000.',
+#       '.....',
+#       '.....'],
+#      ['.....',
+#       '..0..',
+#       '..00.',
+#       '..0..',
+#       '.....'],
+#      ['.....',
+#       '.....',
+#       '.000.',
+#       '..0..',
+#       '.....'],
+#      ['.....',
+#       '..0..',
+#       '.00..',
+#       '..0..',
+#       '.....']]
 
-shapes = [S, I, O, J, L, T] #0-6 indexes 
-shape_colors = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
+# shapes = [S, I, O, J, L, T]  
+# shape_colors = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
 
 class Piece(object):
     def __init__(self, x, y, shape):
@@ -128,9 +129,6 @@ class Piece(object):
         self.rotation = 0
 
 def create_grid(locked_blocks={}):
-    #locked_blocks é um dicionário de posições que guardam o valor ji na matriz que contem um bloco qualquer que seja sua cor
-    
-    # Cria uma matriz preta de 10x20
     grid = [[(0,0,0) for i in range(10)] for i in range(20)]
     
     for i in range(len(grid)):
@@ -231,8 +229,7 @@ def draw_next_shape(shape, surface):
     surface.blit(label, (sx + 10, sy- 30))
 
 def draw_window(surface, grid, score =0):
-    surface.fill(( 0, 0, 0))
-    
+    surface.fill(( 0, 0, 0))   
     pygame.font.init()
     font = pygame.font.SysFont('poppins', 60)
     label = font.render('Tetris', 1, (255,255,255)) 
@@ -266,67 +263,74 @@ def mapPossibleMoves(grid, blocked_position, shape):
     rotations = getRotationPosition(shape)
     
     for i in rotations: 
-        getValidMoves(highest_blocks, accepted_pos, rotations.get(i))
+        getValidMoves(highest_blocks, accepted_pos, rotations.get(i), i)
+    
+    print('calculado')
     
 def getRotationPosition(shape): 
     rotations = {}
     for rotation in range(len(shape.shape)): 
         format = shape.shape[rotation % len(shape.shape)]
         positions = []
-        base_col = 4
-        base_row = 0        
+        left_point = 4
+        right_point = 0
+        lowest_column = 0     
         for i, line in enumerate(format):
             row = list(line)
             for j, column in enumerate(row):
                 if column == '0':
                     positions.append((j,i)) 
-                    if j <= base_col: 
-                        base_col = j
-                        base_row = i
-    
-        left_point = 0
-        right_point = 0
-        for i, pos in enumerate(positions):
-            col = pos[0] - base_col
-            positions[i] = (col, pos[1] - base_row)
-            if left_point  > col: left_point  = col
-            if right_point < col: right_point = col
-        
+                    lowest_column = j
+                    if j < left_point: left_point = j
+                    if j > right_point: right_point = j  
+
         lenght = 1+(right_point - left_point) 
+        
+        lowest_column -= left_point
+        for i, pos in enumerate(positions):
+            positions[i] = (pos[0] - left_point, pos[1]) 
             
-        rotations[rotation] = positions, lenght, right_point, left_point  
+        rotations[rotation] = positions, lenght, lowest_column 
          
     return rotations
 
-def getValidMoves(highest_blocks, accepted_pos, rotation):
+def getValidMoves(highest_blocks, accepted_pos, shape, rotation):
     validMoves = []
     
     for i in range(10):
         highest_block = highest_blocks.get(i)
-        if rotation[3] + i < 0 or rotation[2] + i > 9:
-            continue
         j = i
-        for j in range(rotation[1] + i):
+        highest_col = shape[2] + i
+        for j in range(shape[1] + i):
+            if j > 9: break
             if highest_blocks.get(j) < highest_block:
                 highest_block = highest_blocks.get(j)
-        for pos in rotation[0]:
-            pos = pos[0]+i, pos[1]+highest_block-1
+                highest_col = j 
+                
+        base_row = 0
+        for pos in shape[0]: 
+            if pos[0] == highest_col and pos[1] > base_row: base_row = pos[1]
+            
+        for pos in shape[0]:
+            col = pos[0]+i
+            row = pos[1]+highest_block-1-base_row
+            pos = col, row
             if pos not in accepted_pos: continue
-        play = highest_block-1,i
+        
+        play = rotation, i
         validMoves.append(play)
     
     return validMoves
-                
-                
+                  
 def main(windown):
     
     blocked_position = {}
     grid = create_grid(blocked_position)
+    shape_pos = []
+    next_piece = get_shape()
     
     change_piece = True
-    shape_pos = []
     run = True
-    next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
     level_time = 0
@@ -344,7 +348,7 @@ def main(windown):
             next_piece = get_shape()
             change_piece = False
             score += clear_rows(grid, blocked_position) * 10
-            mapPossibleMoves(grid, blocked_position, current_piece)
+            # mapPossibleMoves(grid, blocked_position, current_piece)
         
         fall_speed = 0.27
         
