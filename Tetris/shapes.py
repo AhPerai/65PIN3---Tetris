@@ -1,10 +1,3 @@
-"""
-  shapes.py             :   This file contains hard-coded formats of the respective pieces of Tetris Game.
-  File created by       :   Shashank Goyal
-  Last commit done by   :   Shashank Goyal
-  Last commit date      :   30th July
-"""
-
 S = [['.....',
       '......',
       '..00..',
