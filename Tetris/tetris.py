@@ -1,8 +1,8 @@
 import pygame, random
-from shapes import *
-from constants import *
-from commands import *
-from piece import Piece
+from Tetris.shapes import *
+from Tetris.constants import *
+from Tetris.commands import *
+from Tetris.piece import Piece
 
 pygame.font.init()
 
@@ -130,18 +130,13 @@ def main(windown):
             next_piece = get_shape()
             change_piece = False
             score += clear_rows(grid, blocked_position) * 10
-            # mapPossibleMoves(grid, blocked_position, current_piece)
+            mapPossibleMoves(grid, blocked_position, current_piece)
         
         fall_speed = 0.27
         
         grid = create_grid(blocked_position)
         fall_time += clock.get_rawtime()
         clock.tick()
-    
-        if level_time/1000 > 5: 
-            level_time = 0
-            if fall_speed > 0.12:
-                fall_speed -= 0.005
         
         if fall_time/1000 >= fall_speed:
             fall_time = 0

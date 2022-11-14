@@ -1,4 +1,5 @@
 import time 
+from Genetic_algo.utils import *
 
 def goLeft(piece, grid): 
     piece.x -= 1
@@ -20,7 +21,6 @@ def doRotate(piece, grid):
     # sleep(0.1)
     if not(piece.isInValidSpace(grid)): piece.x -= 1
     
-
 def mapPossibleMoves(grid, blocked_position, piece):
     accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0,0,0)] for i in range(20)]
     accepted_pos = [j for sub in accepted_pos for j in sub]
@@ -31,10 +31,11 @@ def mapPossibleMoves(grid, blocked_position, piece):
     
     rotations = getRotationPosition(piece)
     
-    for i in rotations: 
-        getValidMoves(highest_blocks, accepted_pos, rotations.get(i), i)
+    possiblePlays = list()
+    for i in rotations:
+        print(f'rotação: {i}') 
+        possiblePlays.append(getValidMoves(grid, highest_blocks, accepted_pos, rotations.get(i), i))
     
-    print('calculado')
     
 def getRotationPosition(piece): 
     rotations = {}
@@ -63,30 +64,48 @@ def getRotationPosition(piece):
          
     return rotations
 
-def getValidMoves(highest_blocks, accepted_pos, shape, rotation):
+def getValidMoves(grid, highest_blocks, accepted_pos, shape, rotation):
     validMoves = []
     
     for i in range(10):
-        highest_block = highest_blocks.get(i)
-        j = i
-        highest_col = shape[2] + i
-        for j in range(shape[1] + i):
-            if j > 9: break
-            if highest_blocks.get(j) < highest_block:
-                highest_block = highest_blocks.get(j)
+        newGrid = grid.copy()
+        validMove = True
+        highest_row = highest_blocks.get(i)
+        highest_col = shape[2]+i
+        for j in range(i, i+shape[1]):
+            if j > 9: 
+                validMove = False 
+                break 
+            if highest_blocks.get(j) < highest_row:
+                highest_row = highest_blocks.get(j)
                 highest_col = j 
-                
+        
+        if not validMove: continue
+     
         base_row = 0
         for pos in shape[0]: 
-            if pos[0] == highest_col and pos[1] > base_row: base_row = pos[1]
-            
+            if pos[0]+i == highest_col and pos[1] > base_row: base_row = pos[1]
+        
+        ingrid_positions = []
         for pos in shape[0]:
             col = pos[0]+i
-            row = pos[1]+highest_block-1-base_row
+            row = pos[1]-base_row+(highest_row-1)
             pos = col, row
-            if pos not in accepted_pos: continue
+            ingrid_positions.append(pos)
+            if pos not in accepted_pos: 
+                isValid = False 
+                break
+        print(f'{pos}\n Válido:{validMove}')
+        if not validMove: continue
         
-        play = rotation, i
+        for pos in ingrid_positions:
+            newGrid[pos[1]][pos[0]] = (192,192,192)
+            
+        inputs = getMatrixParams(newGrid)
+        print(inputs)
+        coordenate = rotation, i        
+        
+        play = coordenate, inputs
         validMoves.append(play)
     
     return validMoves

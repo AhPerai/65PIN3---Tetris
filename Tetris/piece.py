@@ -1,5 +1,5 @@
-from constants import *
-from shapes import *
+from Tetris.constants import *
+from Tetris.shapes import *
 
 class Piece(object):
     def __init__(self, column, row, shape):
