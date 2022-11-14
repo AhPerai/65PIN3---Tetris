@@ -1,17 +1,14 @@
 import pygame
-import Tetris.tetris as Tetris
-
-windown = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Tetris')
-Tetris.main_menu(windown)  # inicia o jogo
+from Tetris.tetris import Tetris
 
 def main():
+    print('oi')
     t = Tetris()
+    pygame.display.set_caption('Tetris')
+    t.main_menu()
     
-    while True:
-         for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                t.game_running = False
-                pygame.display.quit()
-                quit()
+main()
+        
+        
+        
     
