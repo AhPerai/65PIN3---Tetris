@@ -11,7 +11,7 @@ def goRight(piece, grid):
     # sleep(0.1)
     if not(piece.isInValidSpace(grid)): piece.x -= 1
     
-def goDown(piece, grid): 
+def goDown(piece, grid):
     piece.y += 1
     # sleep(0.1)
     if not(piece.isInValidSpace(grid)): piece.y -= 1
@@ -33,8 +33,12 @@ def mapPossibleMoves(grid, blocked_position, piece):
     
     possiblePlays = list()
     for i in rotations:
-        print(f'rotação: {i}') 
+        # print(f'rotação: {i}') 
         possiblePlays.append(getValidMoves(grid, highest_blocks, accepted_pos, rotations.get(i), i))
+    
+    possiblePlays = [j for play in possiblePlays for j in play]
+    
+    return possiblePlays
     
     
 def getRotationPosition(piece): 
@@ -86,23 +90,29 @@ def getValidMoves(grid, highest_blocks, accepted_pos, shape, rotation):
         for pos in shape[0]: 
             if pos[0]+i == highest_col and pos[1] > base_row: base_row = pos[1]
         
-        ingrid_positions = []
+        in_grid_positions = []
         for pos in shape[0]:
             col = pos[0]+i
             row = pos[1]-base_row+(highest_row-1)
             pos = col, row
-            ingrid_positions.append(pos)
             if pos not in accepted_pos: 
                 isValid = False 
                 break
-        print(f'{pos}\n Válido:{validMove}')
+            in_grid_positions.append(pos)
+        # print(f'{pos}\n Válido:{validMove}')
         if not validMove: continue
         
-        for pos in ingrid_positions:
-            newGrid[pos[1]][pos[0]] = (192,192,192)
+        for pos in in_grid_positions:
+            try:
+                newGrid[pos[1]][pos[0]] = (192,192,192)
+            except Exception as e:
+                print(e)
+                print(pos[1])
+                print(pos[0])
+            
             
         inputs = getMatrixParams(newGrid)
-        print(inputs)
+        # print(inputs)
         coordenate = rotation, i        
         
         play = coordenate, inputs

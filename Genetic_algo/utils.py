@@ -27,7 +27,7 @@ def getPeaks(matrix):
 def getSumHeights(peaks):
     height_sum = 0 
     for i in peaks: 
-        height_sum += abs(i-20)
+        height_sum += abs(peaks[i]-20)
     
     return height_sum
     

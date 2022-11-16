@@ -1,4 +1,5 @@
 import pygame, random
+import screen_utils as Screen
 from Tetris.shapes import *
 from Tetris.constants import *
 from Tetris.commands import *
@@ -23,13 +24,14 @@ class Tetris:
     
     def __init__(self): 
         self.grid = [[(0, 0, 0) for _ in range(COLS)] for _ in range(ROWS)]
-        self.score = 0
+        self.score = -5
         self.blocked_pos = dict()
         self.game_running = True
         self.game_over = False
         self.next_piece = Piece(5, 0,random.choice(shapes))
         self.current_piece = self.next_piece
         self.change_current_piece = True
+        self.shape_pos = list()
         self.game_clock = pygame.time.Clock()
         self.fall_time = 0
         self.fall_speed = 0.27
@@ -55,12 +57,6 @@ class Tetris:
             if y < 1:
                 return True
         return False
-
-    def draw_text_middle(self, text, size, color):  
-        font = pygame.font.SysFont("poppins", size, bold=True)
-        label = font.render(text, 1, color)
-
-        self.window.blit(label, (TOP_LEFT_X_AXIS + GRID_WIDTH /2 - (label.get_width()/2), TOP_LEFT_y_AXIS + GRID_HEIGHT/2 - label.get_height()/2))
                 
     def clear_rows(self):
         inc = 0
@@ -135,81 +131,69 @@ class Tetris:
         self.window.blit(label, (sx + 25, sy + 160))
 
                     
-    def main(self):
-
+    def main(self, action=None):
         self.create_grid()
-        shape_pos = []
-
-        while self.game_running and not self.game_over:
-            #atualizando posicoes bloqueadas
-            if self.change_current_piece:
-                for pos in shape_pos:
-                    p = (pos[0], pos[1])
-                    self.blocked_pos[p] = self.current_piece.color
-                    
-                #Criação do próximo formato 
-                self.current_piece = self.next_piece
-                self.next_piece = self.get_shape()
-                self.change_current_piece = False
-                self.clear_rows()
-                self.score +=  5
-                mapPossibleMoves(self.grid, self.blocked_pos, self.current_piece)
-        
-        
-            self.create_grid()
-            self.fall_time += self.game_clock.get_rawtime()
-            self.game_clock.tick()
             
-            if self.fall_time/1000 >= self.fall_speed:
-                self.fall_time = 0
-                self.current_piece.y += 1
-                if not (self.current_piece.isInValidSpace(self.grid)) and self.current_piece.y > 0:
-                    self.current_piece.y -= 1
-                    self.change_current_piece = True 
-            
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.game_running = False
-                    pygame.display.quit()
-
-                #Caso uma tecla tenho sido pressionada...
-                if event.type == pygame.KEYDOWN:                
-                    if event.key == pygame.K_LEFT: goLeft(self.current_piece, self.grid)
-                    if event.key == pygame.K_RIGHT: goRight(self.current_piece, self.grid)
-                    if event.key == pygame.K_DOWN: goDown(self.current_piece, self.grid)
-                    if event.key == pygame.K_UP: doRotate(self.current_piece, self.grid)
-        
-            shape_pos = self.current_piece.getFormatedShape()
-        
-            for i in range(len(shape_pos)):
-                x, y = shape_pos[i]
-                if y > -1:
-                    self.grid[y][x]= self.current_piece.color
+        #atualizando posicoes bloqueadas
+        if self.change_current_piece:
+            for pos in self.shape_pos:
+                if __debug__:
+                    if pos[0] == -1 or pos[1] == -1:
+                        print(str(pos[0]), str(pos[1]))
+                p = (pos[0], pos[1])
+                self.blocked_pos[p] = self.current_piece.color
+                self.create_grid()
                 
-            self.draw_window()
-            self.draw_next_shape()
-            pygame.display.update() 
-            
-            if self.check_lost():
-                self.draw_text_middle("PERDEU AMIGÃO", 80, (255, 255, 255))
-                pygame.display.update()
-                pygame.time.delay(1500)
-                self.game_over = False
-            
-                            
+            #Criação do próximo formato 
+            self.current_piece = self.next_piece
+            self.next_piece = self.get_shape()
+            self.change_current_piece = False
+            self.clear_rows()
+            self.score +=  5            
+    
+        self.fall_time += self.game_clock.get_rawtime()
+        self.game_clock.tick()
         
-    def main_menu(self):
-        run = True
-        while run:
-            self.window.fill((0,0,0))
-            self.draw_text_middle("Pressione qualquer tecla", 60, (255,255,255))
+        if self.fall_time/1000 >= self.fall_speed:
+            self.fall_time = 0
+            self.current_piece.y += 1
+            if not (self.current_piece.isInValidSpace(self.grid)) and self.current_piece.y > 0:
+                self.current_piece.y -= 1
+                self.change_current_piece = True 
+        
+        if action is not None:
+            if action == PRESS_ROTATE: doRotate(self.current_piece, self.grid)
+            if action == PRESS_LEFT: goLeft(self.current_piece, self.grid)
+            if action == PRESS_RIGHT: goRight(self.current_piece, self.grid)
+            if action == PRESS_DOWN: 
+                goDown(self.current_piece, self.grid)
+    
+        self.shape_pos = self.current_piece.getFormatedShape()
+    
+        for i in range(len(self.shape_pos)):
+            x, y = self.shape_pos[i]
+            if y > -1:
+                self.grid[y][x]= self.current_piece.color
+                    
+        self.draw_window()
+        self.draw_next_shape()
+        pygame.display.update() 
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.game_running = False
+                pygame.display.quit() 
+            
+        if self.check_lost():
+            self.change_current_piece = False
+            self.game_over = True  
+            Screen.draw_text_middle(self.window, "Jogo Finalizado", 80, (255, 255, 255))
             pygame.display.update()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run = False
-                if event.type == pygame.KEYDOWN:
-                    self.main()
-
-        pygame.display.quit()
+            print(self.blocked_pos)
+            pygame.time.delay(100) 
+            
+            
+            
+                     
 
 
