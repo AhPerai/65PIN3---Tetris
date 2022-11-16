@@ -1,9 +1,12 @@
-#Imports
+#@Todo
+#Class Network: representan o indivíduo
 
-#variáveis de configuração para a população
+#Class Population
 
-#classe que representa o indivíduo
-# class Agent():
+    #def crossover
+    #def mutate 
+    
+#def avaliate: Dados os inputs calcula o valor de um movimento 
 
 
 

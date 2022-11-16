@@ -138,7 +138,7 @@ class Tetris:
         if self.change_current_piece:
             for pos in self.shape_pos:
                 if __debug__:
-                    if pos[0] == -1 or pos[1] == -1:
+                    if pos[0] < 0 or pos[1] < 0:
                         print(str(pos[0]), str(pos[1]))
                 p = (pos[0], pos[1])
                 self.blocked_pos[p] = self.current_piece.color
@@ -189,7 +189,7 @@ class Tetris:
             self.game_over = True  
             Screen.draw_text_middle(self.window, "Jogo Finalizado", 80, (255, 255, 255))
             pygame.display.update()
-            print(self.blocked_pos)
+            # print(self.blocked_pos)
             pygame.time.delay(100) 
             
             

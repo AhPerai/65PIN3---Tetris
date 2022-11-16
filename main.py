@@ -35,7 +35,7 @@ def run_simulation():
                 t.main(PRESS_DOWN)
         
                 
-    print('FECHAR!')
+    # print('FECHAR!')
     t.game_running = False 
     pygame.display.update() 
     main()
