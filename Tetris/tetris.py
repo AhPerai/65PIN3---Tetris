@@ -24,13 +24,13 @@ class Tetris:
     
     def __init__(self): 
         self.grid = [[(0, 0, 0) for _ in range(COLS)] for _ in range(ROWS)]
-        self.score = -5
+        self.score = 0
         self.blocked_pos = dict()
         self.game_running = True
         self.game_over = False
         self.next_piece = Piece(5, 0,random.choice(shapes))
-        self.current_piece = self.next_piece
-        self.change_current_piece = True
+        self.current_piece = Piece(5, 0,random.choice(shapes))
+        self.change_current_piece = False
         self.shape_pos = list()
         self.game_clock = pygame.time.Clock()
         self.fall_time = 0
@@ -133,40 +133,28 @@ class Tetris:
                     
     def main(self, action=None):
         self.create_grid()
-            
-        #atualizando posicoes bloqueadas
-        if self.change_current_piece:
-            for pos in self.shape_pos:
-                if __debug__:
-                    if pos[0] < 0 or pos[1] < 0:
-                        print(str(pos[0]), str(pos[1]))
-                p = (pos[0], pos[1])
-                self.blocked_pos[p] = self.current_piece.color
-                self.create_grid()
-                
-            #Criação do próximo formato 
-            self.current_piece = self.next_piece
-            self.next_piece = self.get_shape()
-            self.change_current_piece = False
-            self.clear_rows()
-            self.score +=  5            
-    
+                   
         self.fall_time += self.game_clock.get_rawtime()
         self.game_clock.tick()
         
         if self.fall_time/1000 >= self.fall_speed:
             self.fall_time = 0
             self.current_piece.y += 1
+            # print('Pos_Y: '+str(self.current_piece.y))
             if not (self.current_piece.isInValidSpace(self.grid)) and self.current_piece.y > 0:
                 self.current_piece.y -= 1
                 self.change_current_piece = True 
         
         if action is not None:
-            if action == PRESS_ROTATE: doRotate(self.current_piece, self.grid)
-            if action == PRESS_LEFT: goLeft(self.current_piece, self.grid)
-            if action == PRESS_RIGHT: goRight(self.current_piece, self.grid)
-            if action == PRESS_DOWN: 
-                goDown(self.current_piece, self.grid)
+            if action == DO_ROTATE: doRotate(self.current_piece, self.grid)
+            elif action == GO_LEFT: goLeft(self.current_piece, self.grid)
+            elif action == GO_RIGHT: goRight(self.current_piece, self.grid)
+            elif action == GO_DOWN: goDown(self.current_piece, self.grid)
+            elif action == PRESS_DOWN:
+                while self.current_piece.isInValidSpace(self.grid): 
+                    self.current_piece.y += 1
+                self.current_piece.y -= 1
+                self.change_current_piece = True
     
         self.shape_pos = self.current_piece.getFormatedShape()
     
@@ -174,23 +162,41 @@ class Tetris:
             x, y = self.shape_pos[i]
             if y > -1:
                 self.grid[y][x]= self.current_piece.color
-                    
+                
+        
+        #atualizando posicoes bloqueadas
+        if self.change_current_piece:
+            for pos in self.shape_pos:
+                # if __debug__:
+                #     if pos[0] < 0 or pos[1] < 0:
+                #         print(str(pos[0]), str(pos[1]))
+                p = (pos[0], pos[1])
+                self.blocked_pos[p] = self.current_piece.color
+                                
+            #Atualização da tela 
+            self.create_grid()
+            #Criação do próximo formato 
+            self.current_piece = self.next_piece
+            self.next_piece = self.get_shape()
+            self.change_current_piece = False
+            self.clear_rows()
+            self.score +=  5     
+                           
         self.draw_window()
         self.draw_next_shape()
         pygame.display.update() 
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.game_running = False
-                pygame.display.quit() 
             
         if self.check_lost():
             self.change_current_piece = False
             self.game_over = True  
             Screen.draw_text_middle(self.window, "Jogo Finalizado", 80, (255, 255, 255))
             pygame.display.update()
-            # print(self.blocked_pos)
             pygame.time.delay(100) 
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.game_running = False
+                pygame.display.quit() 
             
             
             
