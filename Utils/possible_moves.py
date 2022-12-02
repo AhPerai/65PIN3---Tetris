@@ -1,36 +1,15 @@
-import time 
-from Genetic_algo.utils import *
-
-def goLeft(piece, grid): 
-    piece.x -= 1
-    if not(piece.isInValidSpace(grid)): piece.x += 1 
+import time, copy
+from Utils.game_state import *
     
-def goRight(piece, grid): 
-    piece.x += 1
-    if not(piece.isInValidSpace(grid)): piece.x -= 1
-    
-def goDown(piece, grid):
-    piece.y += 1
-    if not(piece.isInValidSpace(grid)): piece.y -= 1
-    
-def doRotate(piece, grid): 
-    piece.rotation += 1
-    if not(piece.isInValidSpace(grid)): piece.x -= 1
-    
-def mapPossibleMoves(grid, blocked_position, piece):
-    accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0,0,0)] for i in range(20)]
-    accepted_pos = [j for sub in accepted_pos for j in sub]
-    highest_blocks = {0: 20, 1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 20, 8: 20, 9: 20}
-    for pos in blocked_position:
-        i, j = pos
-        if j < highest_blocks.get(i): highest_blocks[i] = j
-    
+def mapPossibleMoves(matrix, piece):
+    possiblePlays = list()
+        
+    accepted_pos = getAcceptedPositions(matrix)
+    peaks = getPeaks(matrix)   
     rotations = getRotationPosition(piece)
     
-    possiblePlays = list()
     for i in rotations:
-        # print(f'rotação: {i}') 
-        possiblePlays.append(getValidMoves(grid, highest_blocks, accepted_pos, rotations.get(i), i))
+        possiblePlays.append(getValidMoves(matrix, peaks, accepted_pos, rotations.get(i), i))
     
     possiblePlays = [j for play in possiblePlays for j in play]
     
@@ -64,20 +43,20 @@ def getRotationPosition(piece):
          
     return rotations
 
-def getValidMoves(grid, highest_blocks, accepted_pos, shape, rotation):
+def getValidMoves(grid, peaks, accepted_pos, shape, rotation):
     validMoves = []
     
     for i in range(10):
-        newGrid = grid.copy()
+        newGrid = copy.deepcopy(grid)
         validMove = True
-        highest_row = highest_blocks.get(i)
+        highest_row = peaks.get(i)
         highest_col = shape[2]+i
         for j in range(i, i+shape[1]):
             if j > 9: 
                 validMove = False 
                 break 
-            if highest_blocks.get(j) < highest_row:
-                highest_row = highest_blocks.get(j)
+            if peaks.get(j) < highest_row:
+                highest_row = peaks.get(j)
                 highest_col = j 
         
         if not validMove: continue
@@ -95,24 +74,23 @@ def getValidMoves(grid, highest_blocks, accepted_pos, shape, rotation):
                 isValid = False 
                 break
             in_grid_positions.append(pos)
-        # print(f'{pos}\n Válido:{validMove}')
         if not validMove: continue
         
         for pos in in_grid_positions:
-            try:
-                newGrid[pos[1]][pos[0]] = (192,192,192)
-            except Exception as e:
-                print(e)
-                print(pos[1])
-                print(pos[0])
+            newGrid[pos[1]][pos[0]] = (192,192,192)
             
-            
-        inputs = getMatrixParams(newGrid)
-        # print(inputs)
         coordenate = rotation, i        
+        print(coordenate)
+        score = get_score(newGrid, inputs)
         
-        play = coordenate, inputs
+        play = coordenate, score
         validMoves.append(play)
     
     return validMoves
+
+
+def get_score(game_state, model): 
+    inputs = getEnviromentInfo(game_state)
+    print(inputs)
+    return model.calculate(inputs)
         

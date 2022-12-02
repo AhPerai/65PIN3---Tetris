@@ -1,5 +1,6 @@
 from Tetris.constants import *
 from Tetris.shapes import *
+from Utils.game_state import getAcceptedPositions
 
 class Piece(object):
     def __init__(self, column, row, shape):
@@ -29,11 +30,7 @@ class Piece(object):
 
     #Verifica se o movimento da peça está em um espaço válido
     def isInValidSpace(self, grid):
-        #Cria uma matriz vazia com qualquer posição do Grid que não esteja colorido por outra peça
-        accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0,0,0)] for i in range(20)]
-        #Converte as posições obtidas em uma lista de coodenadas
-        accepted_pos = [j for sub in accepted_pos for j in sub]
-        
+        accepted_pos = getAcceptedPositions(grid)   
         formatted = self.getFormatedShape()
         
         for pos in formatted:

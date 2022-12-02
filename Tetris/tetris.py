@@ -2,7 +2,7 @@ import pygame, random
 import screen_utils as Screen
 from Tetris.shapes import *
 from Tetris.constants import *
-from Tetris.commands import *
+from Utils.commands import *
 from Tetris.piece import Piece
 from typing import List, Tuple, Dict
 
@@ -20,6 +20,7 @@ class Tetris:
     game_running: bool
     blocked_pos: Dict[Tuple[int, int], Tuple[int, int, int]]
     score: int
+    lines_cleared: int
     grid: List[List[Tuple[int, int, int]]]
     
     def __init__(self): 
@@ -79,8 +80,8 @@ class Tetris:
                 self.blocked_pos = updated_blocked_positions
         
         self.score += SCORE_BY_LINE_CLEARED[inc]
+        return inc
         
-
     def draw_grid(self):
         x = TOP_LEFT_X_AXIS
         y = TOP_LEFT_y_AXIS
@@ -105,12 +106,12 @@ class Tetris:
                     pygame.draw.rect(self.window, self.next_piece.color, (sx + j*30, sy + i*30, 30, 30), 0)
 
         self.window.blit(label, (sx + 10, sy- 30))
-
+        
     def draw_window(self):
         self.window.fill(( 0, 0, 0))   
         pygame.font.init()
         font = pygame.font.SysFont('poppins', 60)
-        label = font.render('Tetris', 1, (255,255,255)) 
+        label = font.render('TETRIS', 1, (255,255,255)) 
         
         self.window.blit(label, (TOP_LEFT_X_AXIS + GRID_WIDTH / 2 - (label.get_width()/2), 30))
         
@@ -121,7 +122,7 @@ class Tetris:
                 
         pygame.draw.rect(self.window, (255,0,0), (TOP_LEFT_X_AXIS, TOP_LEFT_y_AXIS, GRID_WIDTH, GRID_HEIGHT), 5)
         
-        self.draw_grid()
+        # self.draw_grid()
         
         font = pygame.font.SysFont('poppins', 30)
         label = font.render('SCORE: '+ str(self.score), 1, (255,255,255))
@@ -129,6 +130,8 @@ class Tetris:
         sx = TOP_LEFT_X_AXIS + GRID_WIDTH + 50
         sy = TOP_LEFT_y_AXIS + GRID_HEIGHT/2 - 100
         self.window.blit(label, (sx + 25, sy + 160))
+        
+# def draw_game_info(self):
 
                     
     def main(self, action=None):
@@ -140,7 +143,6 @@ class Tetris:
         if self.fall_time/1000 >= self.fall_speed:
             self.fall_time = 0
             self.current_piece.y += 1
-            # print('Pos_Y: '+str(self.current_piece.y))
             if not (self.current_piece.isInValidSpace(self.grid)) and self.current_piece.y > 0:
                 self.current_piece.y -= 1
                 self.change_current_piece = True 
@@ -167,9 +169,6 @@ class Tetris:
         #atualizando posicoes bloqueadas
         if self.change_current_piece:
             for pos in self.shape_pos:
-                # if __debug__:
-                #     if pos[0] < 0 or pos[1] < 0:
-                #         print(str(pos[0]), str(pos[1]))
                 p = (pos[0], pos[1])
                 self.blocked_pos[p] = self.current_piece.color
                                 
@@ -179,7 +178,7 @@ class Tetris:
             self.current_piece = self.next_piece
             self.next_piece = self.get_shape()
             self.change_current_piece = False
-            self.clear_rows()
+            self.lines_cleared += self.clear_rows()
             self.score +=  5     
                            
         self.draw_window()
