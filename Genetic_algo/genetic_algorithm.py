@@ -1,26 +1,28 @@
-import numpy as np
-import random
-from Genetic_algo.utils import getEnviromentInfo
+import numpy as np, random
+from abc import ABC, abstractmethod
+from Utils.game_state import getEnviromentInfo
+from Genetic_algo.Factories import *
+from Genetic_algo.parameters import *
 
-#00: Definindo Parametros para o Indivíduo 
-min_weight = -1
-max_weight = 1
 
 #Definição do Indivíduo 
 class Individual():
     id: int 
-    weights : list
     fitness: int
+    weights : list
     def __init__(self, id, weights = None):
-        self.id = id_num
+        self.id = id
         self.fitness = 0
         if weights == None: 
-            self.weights = [random.uniform(min_weight,max_weight) for i in range(5)]
-        self.weights = weights
+            self.weights = np.random.uniform(MIN_WEIGHT, MAX_WEIGHT, N_WEIGHTS)
+        else:
+            self.weights = weights
     
     #Função para calcular o valor de cada jogada 
-    def calculate(inputs):
-        for i in range(5):
+    def calculate(self, inputs):
+        score = 0
+        print('pesos:',self.weights)
+        for i in range(N_WEIGHTS):
             score += self.weights[i] * inputs[i] 
             
         return score 
@@ -34,69 +36,53 @@ offspring_rate = 1
 
 # - Definindo Algoritmo Genético
 class Population():
-    self.previous_population : list
-    self.population : list
-    self.size : int
-    self.generation: int
-    def __init__(self, previous_population = None, generation):
-        self.size = get_number_offsprings()
+    population : list
+    fitnesses : list
+    size : int
+    generation: int
+    def __init__(self,  
+                 generation,
+                 selection_method, 
+                 crossover_method,
+                 mutation_method,
+                 previous_population = None):
+        self.population = []
+        self.generation = generation
+        self.selection_method = selection_method
+        self.crossover_method = crossover_method
+        self.mutation_method  = mutation_method
         
         #01 - Fase de Inicialização da População
-        if self.previous_population == None:
+        if previous_population == None:
+            self.size = POP_SIZE  
+            self.fitnesses = np.zeros(self.size)
             for i in range(self.size):
-                id_num = (generation * size) + i 
+                id_num = (self.generation * self.size) + i 
                 self.population.append(Individual(id_num))
         else:
-            self.previous_population = previous_population.population
-            self.population = []
-            self.crossover()
-            self.mutation()
-            
+            self.size =  math.ceil(OFFSPRING_RATE * previous_population.size/2)*2 
+            self.generate_population()
     
-    def crossover():
-        #02 - Fase de Seleção de pais
-        
-        # Seleção de pais pela roleta
-        wheel = generate_wheel(self.previous_population)
-        first_parent = roullete_wheel_selection(wheel)
-        second_parent = roullete_wheel_selection(wheel)
-            
-            
-        previous_population.population.
-        
-    def mutation():
-        
-    def get_number_offsprings():
-        if(self.previous_population):
-            self.size =  math.ceil(offspring_rate * population_size/2)*2 
-        else:
-            self.size = base_pop_size      
-        
-
-# ESTÁGIO DE SELEÇÃO - Seleção por roleta 
-def generate_wheel(model_population : Population):
-    agg_fitness = np.sum(model_population)
-    pct_fitness = np.zeros(model_population.size, dtype=int)
+    def generate_population():
+        self.fitnesses = np.zeros(self.size)        
+        while(len(self.population) < self.size):
+            self.generate_offsprings()
     
-    for i in range(model_population.size):
-        pct_fitness[i] = float(model_population.population[i].fitness/agg_fitness)
     
-    return pct_fitness = np.cumsum(pct_fitness)
-             
-def roullete_wheel_selection(wheel):
-    r = random.uniform(0,1)
-
-    for i in range(wheel.size):
-        if r <= wheel[i]:
-            return wheel[i]
-            
+    def generate_offsprings():
+        counter = 0
+        #02 - Fase de Seleção
+        parents = selection_method.execute_selection(previous_population)
         
-#Class Population
-
-    #def crossover
-    #def mutate 
-    
-#def avaliate: Dados os inputs calcula o valor de um movimento 
+        #03 - Fase de cruzamento 
+        c_weights = crossover_method.execute_crossover(parents)
+        
+        #04 - Fase de mutação e por fim criação do Indivíduo 
+        for children in c_weights:
+            counter+=1    
+            Individual(counter, mutation_method.execute_mutation())
+              
+        
 
 
 

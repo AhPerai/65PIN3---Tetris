@@ -9,8 +9,8 @@ def getEnviromentInfo(matrix):
     bumpiness = getBumpiness(peaks)
     n_pits = getPits(peaks)
     n_cleared_lines = getLinesCleared(matrix)
-
-    return sum_height, n_holes, bumpiness, n_pits, n_cleared_lines 
+    
+    return  np.array([sum_height, n_holes, bumpiness, n_pits, n_cleared_lines])
 
 def getPeaks(matrix):
     peaks = {0: 20, 1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 20, 8: 20, 9: 20}

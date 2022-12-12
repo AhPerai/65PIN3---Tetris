@@ -22,8 +22,10 @@ class Tetris:
     score: int
     lines_cleared: int
     grid: List[List[Tuple[int, int, int]]]
+    info : list
     
-    def __init__(self): 
+    def __init__(self, info):
+        pygame.font.init() 
         self.grid = [[(0, 0, 0) for _ in range(COLS)] for _ in range(ROWS)]
         self.score = 0
         self.blocked_pos = dict()
@@ -36,9 +38,12 @@ class Tetris:
         self.game_clock = pygame.time.Clock()
         self.fall_time = 0
         self.fall_speed = 0.27
+        self.lines_cleared = 0
         self.window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.info = info
         
-    def get_shape(self):
+    
+    def get_shape(self, shape_list = None):
         return Piece(5, 0,random.choice(shapes))
 
     def create_grid(self):
@@ -109,7 +114,6 @@ class Tetris:
         
     def draw_window(self):
         self.window.fill(( 0, 0, 0))   
-        pygame.font.init()
         font = pygame.font.SysFont('poppins', 60)
         label = font.render('TETRIS', 1, (255,255,255)) 
         
@@ -117,7 +121,6 @@ class Tetris:
         
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
-                #pygame.draw.rect(supericie, cor, posX, posY, width, height, fill)
                 pygame.draw.rect(self.window, self.grid[i][j], (TOP_LEFT_X_AXIS + j*BLOCK_SIZE, TOP_LEFT_y_AXIS+ i*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 0)
                 
         pygame.draw.rect(self.window, (255,0,0), (TOP_LEFT_X_AXIS, TOP_LEFT_y_AXIS, GRID_WIDTH, GRID_HEIGHT), 5)
@@ -125,14 +128,36 @@ class Tetris:
         # self.draw_grid()
         
         font = pygame.font.SysFont('poppins', 30)
-        label = font.render('SCORE: '+ str(self.score), 1, (255,255,255))
-
+        lblScore = font.render(f'SCORE: {self.score}', 1, (255,255,255))
+        lblLines = font.render(f'LINES: {self.lines_cleared}' , 1, (255,255,255))
         sx = TOP_LEFT_X_AXIS + GRID_WIDTH + 50
         sy = TOP_LEFT_y_AXIS + GRID_HEIGHT/2 - 100
-        self.window.blit(label, (sx + 25, sy + 160))
-        
-# def draw_game_info(self):
-
+        self.window.blit(lblScore, (sx, sy + 160))
+        self.window.blit(lblLines, (sx, sy + 190))
+                    
+    def draw_model_info(self, info):
+        generation = info[0]
+        run = info[1]
+        model = info[2]
+        font = pygame.font.SysFont('poppins', 30)
+        components = []
+        components.append(font.render(f'GENERATION: {generation}',     1, (255,255,255)))
+        components.append(font.render('MODEL', 1, (255,255,255)))
+        components.append(font.render(f'id: {model.id}',     1, (255,255,255)))
+        components.append(font.render(f'run: {run}',     1, (255,255,255)))
+        components.append(font.render(f'Height: {round(model.weights[0], 2)}',     1, (255,255,255)))
+        components.append(font.render(f'Holes: {round(model.weights[1], 2)}',     1, (255,255,255)))
+        components.append(font.render(f'Bumpiness:{round(model.weights[2], 2)}', 1, (255,255,255)))
+        components.append(font.render(f'Pits: {round(model.weights[3], 2)}',     1, (255,255,255)))
+        components.append(font.render(f'Clear lines: {round(model.weights[4], 2)}',    1, (255,255,255)))
+    
+        sx = TOP_LEFT_X_AXIS + GRID_WIDTH - 500
+        sy = TOP_LEFT_y_AXIS + GRID_HEIGHT/2 - 100
+        pos_y = 60
+        for label in components:
+            pos_y -= 30  
+            self.window.blit(label, (sx + 10, sy - pos_y))     
+                        
                     
     def main(self, action=None):
         self.create_grid()
@@ -183,6 +208,7 @@ class Tetris:
                            
         self.draw_window()
         self.draw_next_shape()
+        self.draw_model_info(self.info)
         pygame.display.update() 
             
         if self.check_lost():

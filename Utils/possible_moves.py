@@ -1,4 +1,4 @@
-import time, copy
+import time, copy, numpy as np
 from Utils.game_state import *
     
 def mapPossibleMoves(matrix, piece):
@@ -80,17 +80,28 @@ def getValidMoves(grid, peaks, accepted_pos, shape, rotation):
             newGrid[pos[1]][pos[0]] = (192,192,192)
             
         coordenate = rotation, i        
-        print(coordenate)
-        score = get_score(newGrid, inputs)
+        inputs = getEnviromentInfo(newGrid)
         
-        play = coordenate, score
+        play = coordenate, inputs
         validMoves.append(play)
     
     return validMoves
 
 
-def get_score(game_state, model): 
-    inputs = getEnviromentInfo(game_state)
-    print(inputs)
-    return model.calculate(inputs)
+def get_score(model, move): 
+    print(move[1])
+    inputs = move[1]
+    score =  model.calculate(inputs)
+    return score
+
+def get_best_move(model, playable_moves):
+    best_val = np.NINF
+    best_move = None
+    for move in playable_moves: 
+        score = get_score(model, move)
+        if score > best_val:
+            best_val = score
+            best_move = move[0]
+    
+    return best_move, best_val
         
