@@ -1,6 +1,7 @@
 import pygame, random, time, math, numpy as np
 import screen_utils as screen
 from Tetris.constants import *
+from Tetris.shapes import *
 from Tetris.tetris import Tetris
 from Utils.possible_moves import mapPossibleMoves, get_best_move
 from  Genetic_algo.Factories.SelectionMethodFactory import *
@@ -20,6 +21,8 @@ run = 0
 n_runs = 3
 max_score = 1000000
 gen_index = initial_gen
+weighted_avg = [0.5, 0.25, 0.25]
+shapes = [S, I, O, J, L, T]  
 
 selection_method = RouletteWheelSelection()
 crossover_method = LinearCrossover()
@@ -45,18 +48,19 @@ def start_simulation():
                             previous_population = population)
 
         for model in population.population:
-            print(population.fitnesses)
-            fitness_score = 0
+            fitness_score = []
             
             #Cada individuo tem direito a três jogatinas
             while run < n_runs:
                 result = run_game(model)
                 
-                fitness_score += result[0]
+                fitness_score.append(result)
                 run+=1
                 
             #Encerra as tentativas do Individuo e calcula  o avg_fitness     
-            model.fitness = round(fitness_score/3) 
+            for i in range(len(fitness_score)):
+                 model.fitness += fitness_score[i] * weighted_avg[i]
+    
             population.fitnesses[gen_index] = model.fitness
             run = 0
             #Verifica se os resultados obtidos são melhores do que o melhor já encontrado
@@ -70,8 +74,12 @@ def start_simulation():
     
 def run_game(model):
     #Inicializando Tetris
+    global run, shapes 
     info = gen_index, run, model
-    t = Tetris(info)
+    
+    if run == 0: t = Tetris(info, shapes)
+    else: t = Tetris(info)
+    
     while t.game_running and not t.game_over and t.score < max_score :
         #Decisão de movimento por parte do Modelo em questão
         best_move = get_best_move(model, mapPossibleMoves(t.grid, t.current_piece))
@@ -107,7 +115,7 @@ def run_game(model):
     pygame.display.update() 
     
     #Retorna as informações apropriada da jogatinha
-    return t.score, t.lines_cleared
+    return t.score
 
 def main():
     pygame.init()

@@ -3,7 +3,12 @@ import numpy as np
 
 # LOGICAL ARRAYS
 p = np.array([1, 2, 3, 4])
-print(p)
+fitness_score = [10, 3, 7]
+weighted_avg = [0.5, 0.25, 0.25]
+result = 0
+for i in range(len(fitness_score)):
+        result += fitness_score[i] * weighted_avg[i]
+print(result)
 # r = random.uniform(0,1)
 
 # soma = np.sum(p)

@@ -23,16 +23,22 @@ class Tetris:
     lines_cleared: int
     grid: List[List[Tuple[int, int, int]]]
     info : list
+    shape_list : list
     
-    def __init__(self, info):
+    def __init__(self, info, shape_list = None):
         pygame.font.init() 
+        # Auxiliares para a Simulação
+        self.info = info
+        self.shape_list = shape_list
+        self.shape_counter = 0
+        #Variaveis para o game
         self.grid = [[(0, 0, 0) for _ in range(COLS)] for _ in range(ROWS)]
         self.score = 0
         self.blocked_pos = dict()
         self.game_running = True
         self.game_over = False
-        self.next_piece = Piece(5, 0,random.choice(shapes))
-        self.current_piece = Piece(5, 0,random.choice(shapes))
+        self.next_piece = self.get_shape()
+        self.current_piece = self.get_shape()
         self.change_current_piece = False
         self.shape_pos = list()
         self.game_clock = pygame.time.Clock()
@@ -40,11 +46,16 @@ class Tetris:
         self.fall_speed = 0.27
         self.lines_cleared = 0
         self.window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.info = info
         
     
-    def get_shape(self, shape_list = None):
-        return Piece(5, 0,random.choice(shapes))
+    def get_shape(self):
+        if self.shape_list is None:
+            return Piece(5, 0,random.choice(shapes))
+        
+        piece = Piece(5,0, self.shape_list[self.shape_counter])
+        self.shape_counter +=1
+        if self.shape_counter > len(self.shape_list)-1: self.shape_counter = 0
+        return piece
 
     def create_grid(self):
         
