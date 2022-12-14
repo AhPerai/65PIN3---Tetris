@@ -1,4 +1,4 @@
-import numpy as np, random
+import numpy as np, random, math
 from abc import ABC, abstractmethod
 from Utils.game_state import getEnviromentInfo
 from Genetic_algo.Factories import *
@@ -13,7 +13,8 @@ class Individual():
     def __init__(self, id, weights = None):
         self.id = id
         self.fitness = 0
-        if weights == None: 
+        self.weight_value = [-1,-1,-2,1,100]
+        if weights is None: 
             self.weights = np.random.uniform(MIN_WEIGHT, MAX_WEIGHT, N_WEIGHTS)
         else:
             self.weights = weights
@@ -21,18 +22,13 @@ class Individual():
     #Função para calcular o valor de cada jogada 
     def calculate(self, inputs):
         score = 0
-        print('pesos:',self.weights)
         for i in range(N_WEIGHTS):
-            score += self.weights[i] * inputs[i] 
+            score += self.weights[i] * inputs[i] * self.weight_value[i] 
             
         return score 
     
 #00: Definindo Parametro para o Algoritmo Genético
 elitism = 0.2
-mutation_chance = 0.1
-mutation_effectiviness = 0.1
-base_pop_size = 50
-offspring_rate = 1
 
 # - Definindo Algoritmo Genético
 class Population():
@@ -51,36 +47,48 @@ class Population():
         self.selection_method = selection_method
         self.crossover_method = crossover_method
         self.mutation_method  = mutation_method
+        self.previous_population = previous_population
+        self.offspring_counter = 0
         
         #01 - Fase de Inicialização da População
-        if previous_population == None:
+        if self.previous_population == None:
             self.size = POP_SIZE  
             self.fitnesses = np.zeros(self.size)
             for i in range(self.size):
-                id_num = (self.generation * self.size) + i 
-                self.population.append(Individual(id_num))
+                self.population.append(Individual(i))
         else:
-            self.size =  math.ceil(OFFSPRING_RATE * previous_population.size/2)*2 
+            self.size =  math.ceil(OFFSPRING_RATE * self.previous_population.size/2)*2 
             self.generate_population()
     
-    def generate_population():
-        self.fitnesses = np.zeros(self.size)        
+    def generate_population(self):
+        self.fitnesses = np.zeros(self.size)
+        self.apply_elitism()       
         while(len(self.population) < self.size):
             self.generate_offsprings()
     
+    def apply_elitism(self):
+        sorted_pop = sorted(self.previous_population.population, key=lambda individual: individual.fitness, reverse=True)
+        sorted_pop = sorted_pop[0: int(self.previous_population.size * ELITISM)]
+        
+        for model in sorted_pop:
+            model.id = self.offspring_counter
+            model.fitness = 0
+            self.population.append(model)
+            self.offspring_counter +=1
     
-    def generate_offsprings():
-        counter = 0
+    
+    def generate_offsprings(self):
         #02 - Fase de Seleção
-        parents = selection_method.execute_selection(previous_population)
+        parents = self.selection_method.execute_selection(self.previous_population)
         
         #03 - Fase de cruzamento 
-        c_weights = crossover_method.execute_crossover(parents)
+        c_weights = self.crossover_method.execute_crossover(parents)
         
         #04 - Fase de mutação e por fim criação do Indivíduo 
         for children in c_weights:
-            counter+=1    
-            Individual(counter, mutation_method.execute_mutation())
+            self.population.append(Individual(self.offspring_counter, self.mutation_method.execute_mutation(children, self.generation)))
+            self.offspring_counter+=1    
+        
               
         
 

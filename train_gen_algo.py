@@ -12,34 +12,38 @@ import Genetic_algo.parameters
 
 pygame.display.set_caption('Tetris')
 
-initial_gen  = 0
 best_fitness = np.NINF
 best_individual = None
 population = None
-n_gererations = 50 
 run = 0
-n_runs = 3
 max_score = 1000000
-gen_index = initial_gen
-weighted_avg = [0.5, 0.25, 0.25]
-shapes = [S, I, O, J, L, T]  
+gen_index = 0
+weighted_avg = [0.6, 0.4]
+shapes = [[S, I, O, J, L, T, S, T, O], 
+          [O, I, J, L, L, I, S, J, O], 
+          [L, S, I, L, S, I, T, J, L], 
+          [S, J, T, S, L, J, I, O, I]]
 
 selection_method = RouletteWheelSelection()
-crossover_method = LinearCrossover()
+crossover_method = UniformCrossover()
 mutation_method =  PerturbationMutation()
 
 def start_simulation():
-    global gen_index, run, n_runs, best_fitness, best_individual, population
+    counter = 0
+    best_individuals_of_generation = []
+    generation_data = []
+    global gen_index, run, best_fitness, best_individual, population
 
     #Iniciar loop de geração
-    for i in range(initial_gen, initial_gen+n_gererations):
-        
+    for i in range(N_GENERATIONS):
+        path = f'simulations/{selection_method.method_name}/{crossover_method.method_name}/{mutation_method.method_name}/'
         #Iniciar População
         if population is None:
             population = Population(generation = gen_index, 
                                     selection_method = selection_method,
                                     crossover_method = crossover_method,
                                     mutation_method = mutation_method)
+                        
         else:
             population = Population(generation  = gen_index,
                             selection_method = selection_method,
@@ -51,7 +55,7 @@ def start_simulation():
             fitness_score = []
             
             #Cada individuo tem direito a três jogatinas
-            while run < n_runs:
+            while run < N_RUNS:
                 result = run_game(model)
                 
                 fitness_score.append(result)
@@ -61,15 +65,32 @@ def start_simulation():
             for i in range(len(fitness_score)):
                  model.fitness += fitness_score[i] * weighted_avg[i]
     
-            population.fitnesses[gen_index] = model.fitness
+            population.fitnesses[counter] = model.fitness
             run = 0
+            counter+=1
             #Verifica se os resultados obtidos são melhores do que o melhor já encontrado
             if model.fitness > best_fitness:
                 best_fitness = model.fitness
                 best_individual = model
+        
+        
+        for model in population.population:
+            model_data = []
+            model_data.append(model.id)
+            for w in model.weights:
+                model_data.append(w) 
+            model_data.append(model.fitness)
+            generation_data.append(model_data)
+        
+        best_individuals_of_generation.append(generation_data[np.argmax(population.fitnesses)])
+        filename = f'gen{gen_index}.csv'
+        np.savetxt(path+filename, generation_data, delimiter=',', fmt='%i;' + '%1.5f;'*5 + '%i;')
             
+        generation_data = []
         gen_index += 1
-        # - TODO - Salva os dados de cada modelo da Geração em um arquivo 
+        counter = 0
+    
+    np.savetxt(path+'fitnesses.csv', best_individuals_of_generation, delimiter=',', fmt='%i;' + '%1.5f;'*5 + '%i;')
          
     
 def run_game(model):
@@ -77,7 +98,7 @@ def run_game(model):
     global run, shapes 
     info = gen_index, run, model
     
-    if run == 0: t = Tetris(info, shapes)
+    if run == 0: t = Tetris(info, random.choice(shapes))
     else: t = Tetris(info)
     
     while t.game_running and not t.game_over and t.score < max_score :
@@ -88,13 +109,11 @@ def run_game(model):
         
         #Roda um frame do jogo por um breve momento 
         t.main()
-        time.sleep(0.2)
         
         #Obtem a rotação desenhada 
         while t.current_piece.rotation != rotation:
             if t.game_over: break
             t.main(DO_ROTATE)
-            time.sleep(0.1)
 
         #Obtem a posição X desejada
         while posX != min([x for x, i in t.current_piece.getFormatedShape()]):
@@ -103,12 +122,10 @@ def run_game(model):
                 t.main(GO_LEFT)                
             else:
                 t.main(GO_RIGHT)
-            time.sleep(0.1)
         
         #Solta a peça, roda um frame do jogo por um breve momento   
         t.main(PRESS_DOWN)
         t.main()
-        time.sleep(0.25)
 
     #Finaliza o jogo e atualiza a tela
     t.game_running = False 

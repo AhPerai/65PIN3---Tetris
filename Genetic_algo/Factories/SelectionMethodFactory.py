@@ -17,44 +17,70 @@ class BaseSelection():
         pass
 
 # Implementação Concreta
-
-# SELEÇÃO POR ROLETA --- 
 class RouletteWheelSelection(BaseSelection):
     current_gen : int
     
     def __init__(self):
+        self.method_name = 'RouletteWheelSelection'
         self.current_gen = 0
+        self.wheel = None
     
     #  - Seleção por roleta
     def generate_wheel(self, base_population):
-        pop_size = base_population.population.size
+        pop_size = base_population.size
         agg_fitness = np.sum(base_population.fitnesses)
-        pct_fitness = np.zeros(pop_size, dtype=int)
+        pct_fitness = np.zeros(pop_size)
         
         for i in range(pop_size):
-            pct_fitness[i] = float(population.population[i].fitness/agg_fitness)
+            pct_fitness[i] = base_population.population[i].fitness/agg_fitness
         
-        return np.cumsum(pct_fitness)
+        self.wheel = np.cumsum(pct_fitness)
                 
-    def roullete_wheel_selection(self, wheel):
-        return np.argwhere(wheel > random.uniform(0,1))[0]
+    def roullete_wheel_selection(self):
+        return np.argwhere(self.wheel > random.uniform(0,1))[0][0]
     
     def execute_selection(self, base_population : Population):
-        if len(wheel) == 0 or base_population.generation != self.current_gen:
-            wheel = generate_wheel(base_population)
+        if self.wheel is None or base_population.generation != self.current_gen:
+            self.generate_wheel(base_population)
             self.current_gen = base_population.generation
-            
-        p1 = base_population.population[roullete_wheel_selection(wheel)]
-        p2 = base_population.population[roullete_wheel_selection(wheel)]
+        
+        p1 = base_population.population[self.roullete_wheel_selection()]
+        p2 = base_population.population[self.roullete_wheel_selection()]
         
         return p1, p2
     
 class TournamentSelection(BaseSelection):
     
-    def execute_selection(self):
-        pass
+    def __init__(self):
+        self.method_name = 'TournamentSelection'
+    
+    def execute_selection(self, base_population : Population):
+        parents = []
+        minvalue = math. floor(base_population.size * 0.2)
+        maxvalue = math. floor(base_population.size * 0.35)
+        
+        for i in range(2):
+            parent = []
+            choises = random.sample(range(base_population.size), random.randint(minvalue, maxvalue))
+            for n in choises:
+                parent.append(base_population.population[n])
+            parent = sorted(parent, key=lambda individual: individual.fitness, reverse=True)
+            parents.append(parent[0])
+            
+        return parents[0], parents[1]
     
 class RandomSelection(BaseSelection):
     
-    def execute_selection(self):
-        pass
+    def __init__(self):
+        self.method_name = 'RandomSelection'
+    
+    def execute_selection(self, base_population : Population):
+        pos = []
+        for i in range(2):
+            pos.append(random.randrange(base_population.size))
+        
+        p1 = base_population.population[pos[0]]
+        p2 = base_population.population[pos[1]]
+
+        return p1, p2
+            

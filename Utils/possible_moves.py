@@ -89,7 +89,6 @@ def getValidMoves(grid, peaks, accepted_pos, shape, rotation):
 
 
 def get_score(model, move): 
-    print(move[1])
     inputs = move[1]
     score =  model.calculate(inputs)
     return score
@@ -97,11 +96,15 @@ def get_score(model, move):
 def get_best_move(model, playable_moves):
     best_val = np.NINF
     best_move = None
+    print('quantidade de movimentos:',len(playable_moves))
     for move in playable_moves: 
         score = get_score(model, move)
         if score > best_val:
             best_val = score
             best_move = move[0]
-    
+            inputs = move[1]
+    print('inputs best move: ',inputs)
+    print('MOVE: ',move[0])
+    print('SCORE',score)
     return best_move, best_val
         
