@@ -13,7 +13,7 @@ class Individual():
     def __init__(self, id, weights = None):
         self.id = id
         self.fitness = 0
-        self.weight_value = [-1,-1,-2,1,100]
+        self.weight_value = [-1.5,-20,-10,2,50]
         if weights is None: 
             self.weights = np.random.uniform(MIN_WEIGHT, MAX_WEIGHT, N_WEIGHTS)
         else:
@@ -61,21 +61,9 @@ class Population():
             self.generate_population()
     
     def generate_population(self):
-        self.fitnesses = np.zeros(self.size)
-        self.apply_elitism()       
+        self.fitnesses = np.zeros(self.size)      
         while(len(self.population) < self.size):
             self.generate_offsprings()
-    
-    def apply_elitism(self):
-        sorted_pop = sorted(self.previous_population.population, key=lambda individual: individual.fitness, reverse=True)
-        sorted_pop = sorted_pop[0: int(self.previous_population.size * ELITISM)]
-        
-        for model in sorted_pop:
-            model.id = self.offspring_counter
-            model.fitness = 0
-            self.population.append(model)
-            self.offspring_counter +=1
-    
     
     def generate_offsprings(self):
         #02 - Fase de Seleção

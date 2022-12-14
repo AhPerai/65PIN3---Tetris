@@ -18,15 +18,16 @@ population = None
 run = 0
 max_score = 1000000
 gen_index = 0
-weighted_avg = [0.6, 0.4]
-shapes = [[S, I, O, J, L, T, S, T, O], 
-          [O, I, J, L, L, I, S, J, O], 
-          [L, S, I, L, S, I, T, J, L], 
-          [S, J, T, S, L, J, I, O, I]]
+weighted_avg = [0.5, 0.5]
+shapes = [[S, I, O, J, L, T], 
+          [J, L, T, S, I, O], 
+          [J, I, O, S, L, T], 
+          [J, S, L, O, I, T, L, S, J],
+          [S, I, O, T, L, J, I, O, I]]
 
-selection_method = RouletteWheelSelection()
+selection_method = RandomSelection()
 crossover_method = UniformCrossover()
-mutation_method =  PerturbationMutation()
+mutation_method =  NormalDistributionMutation()
 
 def start_simulation():
     counter = 0

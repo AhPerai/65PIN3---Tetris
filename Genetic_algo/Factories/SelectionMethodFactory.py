@@ -37,7 +37,8 @@ class RouletteWheelSelection(BaseSelection):
         self.wheel = np.cumsum(pct_fitness)
                 
     def roullete_wheel_selection(self):
-        return np.argwhere(self.wheel > random.uniform(0,1))[0][0]
+        roulete = np.argwhere(self.wheel > random.uniform(0,1))[0][0]
+        return roulete
     
     def execute_selection(self, base_population : Population):
         if self.wheel is None or base_population.generation != self.current_gen:
